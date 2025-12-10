@@ -54,7 +54,7 @@ class MFS_profile(Profile_HMM):
         
         ligands_aas = []
         ligands_resids = []
-        for i in xrange(len(self.ligands_aas)):
+        for i in range(len(self.ligands_aas)):
             fragment_ligands_aas = self.ligands_aas[i]
             ligands_aas.extend(fragment_ligands_aas)
             fragment_ligands_resids = self.ligands_resids[i]

@@ -110,7 +110,7 @@ def parse_hmmscan_output(filename):
 
     with open(filename,"r") as fl:
         lines = fl.readlines()
-    lines = map(lambda x: x.strip('\n'), lines)
+    lines = [x.strip('\n') for x in lines]
      
     run = False
     annotation = False
@@ -214,7 +214,7 @@ def parse_hmmscan_output(filename):
                 
                 while alignments:
 
-                    for j in xrange(len(found_domains)):
+                    for j in range(len(found_domains)):
                         
                         line = lines[i]
                         domain_id = 'domain %i' % (j+1) 
@@ -252,7 +252,7 @@ def parse_hmmsearch_output(filename):
    
     with open(filename,"r") as fl:
         lines = fl.readlines()
-    lines = map(lambda x: x.strip('\n'), lines)
+    lines = [x.strip('\n') for x in lines]
 
     query_hmm = filename.split('/')[-1].split('.')[0]
      

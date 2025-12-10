@@ -128,7 +128,11 @@ def worker_summary(userdir):
                             summary[sequence_id][method][1].append(lig)
 
     summary_sorted_keys = sorted(summary.keys(), key=lambda t: len(summary[t].keys()), reverse=True)
-    summary_sorted_ligands = sorted(summary_sorted_keys, key=lambda t: len(filter(None, map(lambda x: x[1], [v for k, v in summary[t].items() if k in summary[t]]))), reverse=True)
+    summary_sorted_ligands = sorted(
+        summary_sorted_keys,
+        key=lambda t: sum(1 for v in summary[t].values() if v[1]),
+        reverse=True
+        )
     
     summary_data = []
     for sequence_id in summary_sorted_ligands:

@@ -47,7 +47,8 @@ class Search_Manager(object):
         blacklist_profiles_path = os.path.join(self.db_path, 'pfam_blacklist.txt')
         self.blacklist_profiles = []
         with open(blacklist_profiles_path, 'r') as fl:
-            self.blacklist_profiles = map(lambda x: x.strip('\n').split('|'), fl.readlines())
+            lines = fl.readlines()
+            self.blacklist_profiles = [x.strip('\n').split('|') for x in lines]
             
         if self.blacklist_profiles != []:
             return True
@@ -153,8 +154,8 @@ class Search_Manager(object):
                         if positions_of_predicted_ligands != []:
                             
                             profile_name, profile_pattern = self.get_blacklist_profile(blacklist_domain.query_hmm)
-                            pligands_aas = map(lambda x: x[0], profile_pattern.split('_'))
-                            pligands_positions = map(lambda x: int(x[1:]), profile_pattern.split('_'))
+                            pligands_aas = [x[0] for x in profile_pattern.split('_')]
+                            pligands_positions = [int(x[1:]) for x in profile_pattern.split('_')]
                             
                             # get positions of ligands in domain alignment of sequence with a blacklisted profile
                             positions_of_ligands = blacklist_domain.get_positions_of_ligands(pligands_aas, pligands_positions)
@@ -227,7 +228,7 @@ class Search_Manager(object):
         start_ends = []            
         for domain in found_domains:
             st_en = [domain.alifrom-1,domain.alito-1]
-            start_ends.append(filter(lambda a: a != None, st_en))
+            start_ends.append([a for a in st_en if a is not None])
         
         for group in merge_ranges(start_ends):
             intervals.append(group)
@@ -296,7 +297,7 @@ class Fragments_Manager(Search_Manager):
         
         self.profiles = []
         with open(self.profiles_path, 'r') as fl:
-            profiles_info_notf = map(lambda x: x.strip('\n').split('|'), fl.readlines())
+            profiles_info_notf = [x.strip('\n').split('|') for x in fl.readlines()]
            
 
         if profiles_info_notf==[]:
@@ -328,10 +329,9 @@ class Fragments_Manager(Search_Manager):
                 
                 profile.has_ligands = True
                 ligands = pattern.split('_')
-                profile.ligands_aas = map(lambda ligand: ligand[0], ligands)
-                profile.ligands_resids = map(lambda ligand: int(ligand[1:]), ligands)
-            
-                profile.ligands_positions_in_model.extend(map(lambda x: int(x), ligands_positions.split('_')))
+                profile.ligands_aas = [x[0] for x in ligands]
+                profile.ligands_resids = [int(ligand[1:]) for ligand in ligands] 
+                profile.ligands_positions_in_model.extend([int(x) for x in ligands_positions.split('_')])
             
             self.profiles.append(profile)
 
@@ -408,7 +408,7 @@ class Fragments_Manager(Search_Manager):
         
         annotations = []
    
-        for i in xrange(len(sequence.found_domains)):
+        for i in range(len(sequence.found_domains)):
             
             domain = sequence.found_domains[i]
             domain_start = domain.alifrom - 1
@@ -423,12 +423,12 @@ class Fragments_Manager(Search_Manager):
             
             if profile.has_ligands:
                 
-                fragment_ligands_list = map(lambda x: '%s%i'%(x[0], x[1]), zip(profile.ligands_aas, profile.ligands_resids))
+                fragment_ligands_list = [f"{aa}{res}" for aa, res in zip(profile.ligands_aas, profile.ligands_resids)]
                 fragment_ligands = '-'.join(fragment_ligands_list)
 
                 ligands_positions = sequence.predicted_ligands[i][0]
                 predicted_ligands_aas = sequence.get_predicted_ligands(ligands_positions)
-                predicted_ligands_list = map(lambda x: '%s%i'%(x[0], x[1]), zip(predicted_ligands_aas, map(lambda y: y+1,ligands_positions)))
+                predicted_ligands_list = [f"{aa}{res}" for aa,res in zip(predicted_ligands_aas, (y+1 for y in ligands_positions))]
                 predicted_ligands = '-'.join(predicted_ligands_list)
             
             annotated_sequence = sequence.annotate_domain(domain_start, domain_end, ligands_positions)
@@ -465,7 +465,7 @@ class MFS_Manager(Fragments_Manager):
         
         self.profiles = []
         with open(self.profiles_path, 'r') as fl:
-            profiles_info_notf = map(lambda x: x.strip('\n').split('|'), fl.readlines())
+            profiles_info_notf = [x.strip('\n').split('|') for x in fl.readlines()]
         
         if profiles_info_notf==[]:
            return False
@@ -510,10 +510,10 @@ class MFS_Manager(Fragments_Manager):
                 
                 fragment_profile.has_ligands = True
                 ligands = pattern.split('_')
-                fragment_profile.ligands_aas = map(lambda ligand: ligand[0], ligands)
-                fragment_profile.ligands_resids = map(lambda ligand: int(ligand[1:]), ligands)
+                fragment_profile.ligands_aas = [ligand[0] for ligand in ligands]
+                fragment_profile.ligands_resids = [int(ligand[1:]) for ligand in ligands]
             
-                fragment_profile.ligands_positions_in_model.extend(map(lambda x: int(x), ligands_positions.split('_')))
+                fragment_profile.ligands_positions_in_model.extend([int(x) for x in ligands_positions.split('_')])
 
             mfs_profile.fragments.append(fragment_profile)
             
@@ -529,7 +529,7 @@ class MFS_Manager(Fragments_Manager):
         
         domains_matched_by_mfs_profile = {}
         
-        for i in xrange(len(domains)):
+        for i in range(len(domains)):
             
             domain = domains[i]
 
@@ -565,7 +565,7 @@ class MFS_Manager(Fragments_Manager):
                 predicted_ligands_fragments = []
                 matched_domains_fragments = []
                 
-                for i in xrange(len(mfs_profile.fragments)):
+                for i in range(len(mfs_profile.fragments)):
                     
                     fid = i+1
                     fragment_profile = mfs_profile.get_fragment_by_id(fid)
@@ -646,7 +646,7 @@ class MFS_Manager(Fragments_Manager):
             if mo_nolig:
                ligands_positions = []
             else:
-               ligands_list = map(lambda x: '%s%i'%(x[0], x[1]), zip(ligands_aas, ligands_resids))
+               ligands_list = [f"{aa}{res}" for aa,res in zip(ligands_aas, ligands_resids)]
                ligands = '-'.join(ligands_list)
             
                ligands_positions = []
@@ -672,11 +672,11 @@ class MFS_Manager(Fragments_Manager):
             else:
                # predicted ligands
                predicted_ligands_aas = sequence.get_predicted_ligands(ligands_positions)
-               predicted_ligands_list = map(lambda x: '%s%i'%(x[0], x[1]), zip(predicted_ligands_aas, map(lambda y: y+1,ligands_positions)))
+               predicted_ligands_list = [f"{aa}{res}" for aa,res in zip(predicted_ligands_aas, (y+1 for y in ligands_positions))]
                predicted_ligands = '-'.join(predicted_ligands_list)
             
             # domains ranges
-            domains_ranges = map(lambda x: '-'.join(map(lambda y: str(y+1), x)), domains_intervals)
+            domains_ranges = ['-'.join((str(y+1) for y in x)) for x in domains_intervals]
             ranges = ','.join(domains_ranges)
 
             #annotation = "{hdr}@{seq}@{pdb}@{st}@{lig}@{bit}@{bs}@{evl:.2E}@{plig}@{rng}\n".format(hdr = sequence.header,\
@@ -715,7 +715,7 @@ class Pfam_Manager(Search_Manager):
         
         self.profiles = []
         with open(self.profiles_path, 'r') as fl:
-            profiles_info_notf = map(lambda x: x.strip('\n'), fl.readlines())
+            profiles_info_notf = [x.strip('\n') for x in fl.readlines()]
            
         if profiles_info_notf==[]:
            return False
@@ -727,7 +727,7 @@ class Pfam_Manager(Search_Manager):
             profiles_info.append("|".join(pinf_list[:2]))
         ##END VALE TMP
         
-        profiles_names = list(set(map(lambda x: x.split('|')[0], profiles_info)))
+        profiles_names = list(set([x.split('|')[0] for x in profiles_info]))
 
         for profile_name in profiles_names:
             
@@ -750,13 +750,13 @@ class Pfam_Manager(Search_Manager):
                 for pattern in patterns:
         
 
-                    plig_aas = map(lambda x: x[1], pattern.split('_'))
-                    plig_positions = map(lambda x: int(x[2:]), pattern.split('_'))
+                    plig_aas = [x[1] for x in pattern.split('_')]
+                    plig_positions = [int(x[2:]) for x in pattern.split('_')]
                     
                     lig_aas.append(plig_aas)
                     lig_positions_in_model.append(plig_positions)
                 
-                il = sorted(zip(lig_aas, lig_positions_in_model), key=lambda x: len(x[0]), reverse=True)
+                il = sorted(zip(list(lig_aas), list(lig_positions_in_model)), key=lambda x: len(x[0]), reverse=True)
                 profile.ligands_aas, profile.ligands_positions_in_model = zip(*il)
         
             self.profiles.append(profile)
@@ -805,7 +805,7 @@ class Pfam_Manager(Search_Manager):
                     
                     posi_save = []
 
-                    for p in xrange(len(patterns_ligands_aas)):
+                    for p in range(len(patterns_ligands_aas)):
                         
                         pligands_aas = patterns_ligands_aas[p]
                         pligands_positions = patterns_ligands_positions[p]
@@ -821,10 +821,10 @@ class Pfam_Manager(Search_Manager):
                                         break
                                 if pattern_flag:
                                     sequence.predicted_ligands[i].append(positions_of_ligands)
-                                    posi_save.append(map(str, positions_of_ligands))
+                                    posi_save.append([str(p) for p in positions_of_ligands])
                             else:
                                 sequence.predicted_ligands.append([positions_of_ligands])
-                                posi_save.append(map(str, positions_of_ligands))
+                                posi_save.append([str(p) for p in positions_of_ligands])
                             
                             ligands_are_conserved = True
  
@@ -860,7 +860,7 @@ class Pfam_Manager(Search_Manager):
         
         annotations = []
         
-        for i in xrange(len(sequence.found_domains)):
+        for i in range(len(sequence.found_domains)):
             
             domain = sequence.found_domains[i]
             domain_start = domain.alifrom - 1
@@ -870,11 +870,11 @@ class Pfam_Manager(Search_Manager):
             if sequence.predicted_ligands[i]:
                 
                 predicted_ligands_positions = sequence.predicted_ligands[i]
-                for j in xrange(len(predicted_ligands_positions)):
+                for j in range(len(predicted_ligands_positions)):
                     
                     ligands_positions = predicted_ligands_positions[j]
                     predicted_ligands_aas = sequence.get_predicted_ligands(ligands_positions)
-                    predicted_ligands_list = map(lambda x: '%s%i'%(x[0], x[1]), zip(predicted_ligands_aas, map(lambda y: y+1,ligands_positions)))
+                    predicted_ligands_list = [f"{aa}{res}" for aa, res in zip(predicted_ligands_aas, (y+1 for y in ligands_positions))]
                     predicted_ligands = '-'.join(predicted_ligands_list)
                     
                     annotated_sequence = sequence.annotate_domain(domain_start, domain_end, ligands_positions)

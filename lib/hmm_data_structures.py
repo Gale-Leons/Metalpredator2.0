@@ -58,7 +58,7 @@ class Matched_Sequence(object):
 
         start_start = 0
         end_end = 0
-        for i in xrange(len(intervals)):
+        for i in range(len(intervals)):
 
             start, end = intervals[i]
             ligs = ligands[i]
@@ -110,7 +110,7 @@ class Domain(object):
         
         indiced_of_ligands_in_sequence = []
         
-        for i in xrange(len(ligands_positions)):
+        for i in range(len(ligands_positions)):
 
             lig = ligands[i]
             pos = ligands_positions[i]
