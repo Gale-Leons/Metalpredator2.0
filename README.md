@@ -10,4 +10,4 @@ replace part of code with faster alternatives
 
 ### Editor
 Leonardo Galeotti
-PhD @Gale-Leons @CERM.UNIFI 
+PhD Student @Gale-Leons @CERM.UNIFI 
